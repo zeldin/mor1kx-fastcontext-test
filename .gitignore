@@ -1,0 +1,6 @@
+/build/
+/fusesoc.conf
+/fusesoc.venv/
+/fusesoc_libraries/
+/testprog
+/testprog.map
