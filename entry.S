@@ -3,10 +3,68 @@
 	.globl or1k_interrupt_handler_add
 	.globl or1k_interrupt_enable
 	.globl or1k_interrupt_disnable
-	
-	.org 0x100
-_or1k_reset:
+
+	.word 0 // No exception vector 0
+	.word 0
+
+	// Reset vector
+	l.j _or1k_reset
 	l.movhi r0, 0
+	
+	// Bus Error exception
+	l.j _exception_handler
+	l.ori r3, r0, 0x2
+
+	// Data Page Fault exception
+	l.j _exception_handler
+	l.ori r3, r0, 0x3
+	
+	// Instruction Page Fault exception
+	l.j _exception_handler
+	l.ori r3, r0, 0x4
+	
+	// Tick Timer exception
+	l.j _exception_handler
+	l.ori r3, r0, 0x5
+
+	// Alignment exception
+	l.j _exception_handler
+	l.ori r3, r0, 0x6
+
+	// Illegal Instruction exception
+	l.j _exception_handler
+	l.ori r3, r0, 0x7
+
+	// External Interrupt
+	l.j _exception_handler
+	l.ori r3, r0, 0x8
+
+	// D-TLB Miss exception
+	l.j _exception_handler
+	l.ori r3, r0, 0x9
+
+	// I-TLB Miss exception
+	l.j _exception_handler
+	l.ori r3, r0, 0xa
+
+	// Range exception
+	l.j _exception_handler
+	l.ori r3, r0, 0xb
+
+	// System Call exception
+	l.j _exception_handler
+	l.ori r3, r0, 0xc
+
+	// Floating Point exception
+	l.j _exception_handler
+	l.ori r3, r0, 0xd
+
+	// Trap exception
+	l.j _exception_handler
+	l.ori r3, r0, 0xe
+
+
+_or1k_reset:
 	/* Clear status register, set supervisor mode */
 	l.ori r1, r0, 0x1
 	l.mtspr r0, r1, 0x11
@@ -44,6 +102,13 @@ _or1k_reset:
 	l.jal _or1k_board_exit
 	l.nop
 	
+	/* Loop forever */
+1:
+	l.j 1b
+	l.nop 0xc
+
+
+_exception_handler:
 	/* Loop forever */
 1:
 	l.j 1b

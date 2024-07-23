@@ -1,6 +1,7 @@
 [submodule "mor1kx-generic"]
 	path = mor1kx-generic
-	url = https://github.com/stffrdhrn/mor1kx-generic.git
+	url = https://github.com/zeldin/mor1kx-generic.git
+	branch = small_mem
 [submodule "mor1kx"]
 	path = mor1kx
 	url = https://github.com/openrisc/mor1kx.git

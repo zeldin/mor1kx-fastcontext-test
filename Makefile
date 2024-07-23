@@ -6,7 +6,8 @@ PYTHON = python
 CC = or1k-elf-gcc
 CFLAGS = -ffunction-sections -fdata-sections -mcmov -msext -msfimm -mshftimm \
 	 -Os -fno-move-loop-invariants
-LDFLAGS = -Wl,--gc-sections,-z,max-page-size=0x10 -nostartfiles
+LDFLAGS = -Wl,--gc-sections,-z,max-page-size=0x10 -nostartfiles \
+	  -Wl,--section-start=.vectors=0x2000
 
 BOARDLIB = board-or1ksim-uart
 
@@ -18,7 +19,7 @@ OPTIONS = --option_rf_num_shadow_gpr 2
 # VCDFLAGS = --vcd
 
 run_test : testprog $(FUSESOC) | fusesoc.conf
-	$(FUSESOC) $(FUSESOCFLAGS) run --target mor1kx_tb --tool icarus mor1kx-generic $(FEATURES) $(OPTIONS) --elf_load ./testprog $(TRACEFLAGS) $(VCDFLAGS)
+	$(FUSESOC) $(FUSESOCFLAGS) run --target mor1kx_tb --tool icarus --flag +small_mem mor1kx-generic $(FEATURES) $(OPTIONS) --elf_load ./testprog $(TRACEFLAGS) $(VCDFLAGS)
 
 testprog : entry.S main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -l$(BOARDLIB) -Wl,-Map,testprog.map
