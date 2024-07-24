@@ -2,7 +2,8 @@
 
 	.globl or1k_interrupt_handler_add
 	.globl or1k_interrupt_enable
-	.globl or1k_interrupt_disnable
+	.globl or1k_interrupt_disable
+	.globl or1k_timer_ticks
 
 	.word 0 // No exception vector 0
 	.word 0
@@ -24,8 +25,8 @@
 	l.ori r3, r0, 0x4
 	
 	// Tick Timer exception
-	l.j _exception_handler
-	l.ori r3, r0, 0x5
+	l.j _timer_tick_handler
+	l.mfspr r3, r0, 0x5000
 
 	// Alignment exception
 	l.j _exception_handler
@@ -36,8 +37,8 @@
 	l.ori r3, r0, 0x7
 
 	// External Interrupt
-	l.j _exception_handler
-	l.ori r3, r0, 0x8
+	l.j _interrupt_handler
+	l.mfspr r10, r0, 0x4802
 
 	// D-TLB Miss exception
 	l.j _exception_handler
@@ -115,7 +116,44 @@ _exception_handler:
 	l.nop 0xc
 
 
-	/* Stub */
+_timer_tick_handler:
+	l.rori r3, r3, 29 /* IP bit to sign bit */
+	l.sfltsi r3, 0
+	l.slli r3, r3, 1  /* Clear IP */
+	l.bnf 1f          /* Skip if IP wasn't set */
+	l.rori r3, r3, 36 /* Move IP back to original position */
+
+	/* Write back TTMR, and increment ticks */
+	l.mtspr r0, r3, 0x5000
+	l.movhi r3, ha(or1k_timer_ticks)
+	l.lwz r4, lo(or1k_timer_ticks)(r3)
+	l.addi r4, r4, 1
+	l.sw lo(or1k_timer_ticks)(r3), r4
+1:
+	/* Return */
+	l.rfe
+
+
+_interrupt_handler:
+	l.movhi r3, ha(_or1k_board_uart_IRQ)
+	l.lwz r3, lo(_or1k_board_uart_IRQ)(r3)
+	/* Move status bit for UART IRQ to the LSB and mask it out */
+	l.srl r3, r10, r3
+	l.andi r3, r3, 0x1
+	/* Check if nonzero */
+	l.sfeq r3, r0
+	l.bf 1f
+	/* Clear pending IRQs before calling handler to avoid races */
+	l.mtspr r0, r10, 0x4802
+	/* If status bit for UART IRQ was nonzero then call the handler */
+	l.jal _or1k_uart_interrupt_handler
+	l.ori r3, r0, 0
+1:
+	/* Return */
+	l.rfe
+
+
+	/* Stub; the uart irq handler is hardcoded */
 or1k_interrupt_handler_add:	
 	l.jr r9
 	l.nop
@@ -141,4 +179,10 @@ or1k_interrupt_disable:
 	l.mtspr	r0, r3, 0x4800
 	
 
+	.bss
+
+or1k_timer_ticks:
+	.ds.l 1
+
+	
 	.end
