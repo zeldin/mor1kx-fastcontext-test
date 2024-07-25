@@ -13,8 +13,9 @@ BOARDLIB = board-or1ksim-uart
 
 FUSESOC = $(VENV)/bin/fusesoc
 FUSESOCFLAGS = --monochrome
-FEATURES = --feature_immu NONE --feature_dmmu NONE --feature_datacache NONE
-OPTIONS = --option_rf_num_shadow_gpr 2
+FEATURES = --feature_immu NONE --feature_dmmu NONE --feature_datacache NONE \
+	   --feature_fastcontexts ENABLED
+OPTIONS = --option_rf_num_shadow_gpr 1
 # TRACEFLAGS = --trace_enable --trace_to_screen
 # VCDFLAGS = --vcd
 

@@ -87,6 +87,10 @@ _or1k_reset:
 	l.bf 1b
 	l.addi r3, r3, 4
 
+	/* Set exception stack to 0x80 beyond normal stack */
+	l.addi r3, r1, 0x80
+	l.mtspr r0, r3, 0x421
+	
 	/* UART initialization */
 	l.jal _or1k_uart_init
 	l.nop
